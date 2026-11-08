@@ -158,7 +158,7 @@ def main() -> None:
         elif option == "3":
             print("Update Stock")
             product_id = input("Enter Product ID: ").strip().upper()
-            found: Product | None = inventory.search_product(product_id)
+            found: Product | None = inventory.find_product(product_id)
             if found is None:
                 print("Product not found.")
             else:
@@ -172,7 +172,7 @@ def main() -> None:
         elif option == "4":
             print("Search Product")
             product_id = input("Enter Product ID: ").strip().upper()
-            found = inventory.search_product(product_id)
+            found = inventory.find_product(product_id)
             if found is None:
                 print("Product not found.")
             else:
@@ -189,12 +189,12 @@ def main() -> None:
 
         elif option == "5":
             print("Saving inventory...")
-            save_inventory(inventory.get_products())
+            save_inventory(inventory.get_all_products())
             print(f"Inventory saved successfully to {INVENTORY_FILE}.")
 
         elif option == "6":
             print("Saving inventory before exit...")
-            save_inventory(inventory.get_products())
+            save_inventory(inventory.get_all_products())
             print("Inventory saved successfully.")
             print("Thank you for using Inventory Management System.")
             print("Program terminated.")

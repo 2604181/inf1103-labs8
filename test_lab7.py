@@ -115,16 +115,16 @@ class TestInventoryOperations(unittest.TestCase):
     def test_add_and_duplicate_rejected(self):
         self.assertTrue(self.inventory.add_product(DigitalProduct("D002", "E-Book", 9.99, 5, SUPPLIER, 12.5)))
         self.assertFalse(self.inventory.add_product(DigitalProduct("D002", "Other", 1.0, 1, SUPPLIER, 1.0)))
-        self.assertEqual(len(self.inventory.get_products()), 3)
+        self.assertEqual(len(self.inventory.get_all_products()), 3)
 
     def test_search(self):
-        self.assertEqual(self.inventory.search_product("P001").get_name(), "Laptop")
-        self.assertEqual(self.inventory.search_product("D001").get_name(), "Antivirus")
-        self.assertIsNone(self.inventory.search_product("P999"))
+        self.assertEqual(self.inventory.find_product("P001").get_name(), "Laptop")
+        self.assertEqual(self.inventory.find_product("D001").get_name(), "Antivirus")
+        self.assertIsNone(self.inventory.find_product("P999"))
 
     def test_update_stock_via_search(self):
-        self.inventory.search_product("P001").update_stock(40)
-        self.assertEqual(self.inventory.search_product("P001").get_stock(), 40)
+        self.inventory.find_product("P001").update_stock(40)
+        self.assertEqual(self.inventory.find_product("P001").get_stock(), 40)
 
     def test_display_all_shows_both_types(self):
         output = capture_output(self.inventory.display_all)
