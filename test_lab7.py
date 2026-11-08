@@ -1,5 +1,5 @@
-"""
-INF1103 Week 9 - Tests for the Lab 7 testing requirements.
+﻿"""
+INF1103 Week 9/10 - Tests for the Lab 7 testing requirements (updated for the Supplier parameter).
 Run with:  python test_lab7.py
 (Uses a temporary file for the JSON tests, so your real inventory.json is not touched.)
 """
@@ -11,11 +11,15 @@ import tempfile
 import unittest
 
 from product import Product
+from supplier import Supplier
 from physical_product import PhysicalProduct
 from digital_product import DigitalProduct
 from can_be_shipped import CanBeShipped
 from inventory import Inventory
 from file_handling import load_inventory, save_inventory
+
+SUPPLIER = Supplier("S001", "TechSource Pte Ltd", "sales@techsource.sg")
+SUPPLIER_DICT = {"id": "S001", "name": "TechSource Pte Ltd", "email": "sales@techsource.sg"}
 
 
 def capture_output(function):
@@ -28,8 +32,8 @@ def capture_output(function):
 
 class TestProductTypes(unittest.TestCase):
     def setUp(self):
-        self.physical = PhysicalProduct("P001", "Laptop", 1200.00, 15, 2.5)
-        self.digital = DigitalProduct("D001", "Antivirus", 29.99, 100, 350.0)
+        self.physical = PhysicalProduct("P001", "Laptop", 1200.00, 15, SUPPLIER, 2.5)
+        self.digital = DigitalProduct("D001", "Antivirus", 29.99, 100, SUPPLIER, 350.0)
 
     # 1. Physical products store and display their weights
     def test_physical_stores_and_displays_weight(self):
@@ -60,7 +64,7 @@ class TestProductTypes(unittest.TestCase):
     # 4. The abstract Product class cannot be instantiated directly
     def test_product_cannot_be_instantiated(self):
         with self.assertRaises(TypeError):
-            Product("X001", "Generic", 1.0, 1)
+            Product("X001", "Generic", 1.0, 1, SUPPLIER)
 
     def test_interface_cannot_be_instantiated(self):
         with self.assertRaises(TypeError):
@@ -70,13 +74,13 @@ class TestProductTypes(unittest.TestCase):
     def test_shipping_cost_for_different_weights(self):
         expected = {0.0: 5.00, 0.5: 6.00, 1.0: 7.00, 2.5: 10.00, 10.0: 25.00}
         for weight, cost in expected.items():
-            product = PhysicalProduct("T", "Test", 1.0, 1, weight)
+            product = PhysicalProduct("T", "Test", 1.0, 1, SUPPLIER, weight)
             self.assertAlmostEqual(product.calculate_shipping_cost(), cost)
             self.assertGreaterEqual(product.calculate_shipping_cost(), 0)
 
     def test_heavier_products_cost_more_to_ship(self):
-        light = PhysicalProduct("L", "Light", 1.0, 1, 1.0)
-        heavy = PhysicalProduct("H", "Heavy", 1.0, 1, 8.0)
+        light = PhysicalProduct("L", "Light", 1.0, 1, SUPPLIER, 1.0)
+        heavy = PhysicalProduct("H", "Heavy", 1.0, 1, SUPPLIER, 8.0)
         self.assertGreater(heavy.calculate_shipping_cost(), light.calculate_shipping_cost())
 
     def test_physical_implements_interface(self):
@@ -96,21 +100,21 @@ class TestProductTypes(unittest.TestCase):
 
     def test_negative_weight_or_size_rejected(self):
         with self.assertRaises(ValueError):
-            PhysicalProduct("T", "Test", 1.0, 1, -1.0)
+            PhysicalProduct("T", "Test", 1.0, 1, SUPPLIER, -1.0)
         with self.assertRaises(ValueError):
-            DigitalProduct("T", "Test", 1.0, 1, -1.0)
+            DigitalProduct("T", "Test", 1.0, 1, SUPPLIER, -1.0)
 
 
 class TestInventoryOperations(unittest.TestCase):
     # 7. Inventory operations continue to work
     def setUp(self):
         self.inventory = Inventory()
-        self.inventory.add_product(PhysicalProduct("P001", "Laptop", 1200.00, 15, 2.5))
-        self.inventory.add_product(DigitalProduct("D001", "Antivirus", 29.99, 100, 350.0))
+        self.inventory.add_product(PhysicalProduct("P001", "Laptop", 1200.00, 15, SUPPLIER, 2.5))
+        self.inventory.add_product(DigitalProduct("D001", "Antivirus", 29.99, 100, SUPPLIER, 350.0))
 
     def test_add_and_duplicate_rejected(self):
-        self.assertTrue(self.inventory.add_product(DigitalProduct("D002", "E-Book", 9.99, 5, 12.5)))
-        self.assertFalse(self.inventory.add_product(DigitalProduct("D002", "Other", 1.0, 1, 1.0)))
+        self.assertTrue(self.inventory.add_product(DigitalProduct("D002", "E-Book", 9.99, 5, SUPPLIER, 12.5)))
+        self.assertFalse(self.inventory.add_product(DigitalProduct("D002", "Other", 1.0, 1, SUPPLIER, 1.0)))
         self.assertEqual(len(self.inventory.get_products()), 3)
 
     def test_search(self):
@@ -141,8 +145,8 @@ class TestJsonPersistence(unittest.TestCase):
 
     def test_round_trip_preserves_types_and_attributes(self):
         original = [
-            PhysicalProduct("P001", "Laptop", 1200.00, 15, 2.5),
-            DigitalProduct("D001", "Antivirus", 29.99, 100, 350.0),
+            PhysicalProduct("P001", "Laptop", 1200.00, 15, SUPPLIER, 2.5),
+            DigitalProduct("D001", "Antivirus", 29.99, 100, SUPPLIER, 350.0),
         ]
         save_inventory(original, self.path)
 
@@ -170,8 +174,8 @@ class TestJsonPersistence(unittest.TestCase):
         self.assertEqual(load_inventory(self.path), ([], "error"))
 
     def test_unknown_or_missing_type_is_rejected(self):
-        for bad in ([{"id": "X", "name": "N", "price": 1, "stock": 1, "type": "subscription"}],
-                    [{"id": "X", "name": "N", "price": 1, "stock": 1}]):
+        for bad in ([{"id": "X", "name": "N", "price": 1, "stock": 1, "supplier": SUPPLIER_DICT, "type": "subscription"}],
+                    [{"id": "X", "name": "N", "price": 1, "stock": 1, "supplier": SUPPLIER_DICT}]):
             with open(self.path, "w") as file:
                 json.dump(bad, file)
             self.assertEqual(load_inventory(self.path), ([], "error"))

@@ -1,21 +1,34 @@
 """
-INF1103 Week 9 - File handling
+INF1103 Week 10 - File handling
 Responsibility: load and save inventory data (JSON). No menus, no prompts.
-Each saved product has a "type" ("physical" or "digital") so the correct
-subclass can be recreated when loading.
+Each saved product has a "type" ("physical" or "digital") and a "supplier".
+Products with the same supplier id share ONE Supplier object when loaded.
 """
 import json
+from collections.abc import Sequence
+from typing import Any
 
+from product import Product
+from supplier import Supplier
 from physical_product import PhysicalProduct
 from digital_product import DigitalProduct
 
 # Global Constant
-INVENTORY_FILE = "inventory.json"
+INVENTORY_FILE: str = "inventory.json"
 
 
-def product_from_dict(item):
+def supplier_from_dict(data: dict[str, Any], suppliers: dict[str, Supplier]) -> Supplier:
+    """Reuse an existing Supplier object if this supplier id was already loaded."""
+    supplier_id: str = data["id"]
+    if supplier_id not in suppliers:
+        suppliers[supplier_id] = Supplier(supplier_id, data["name"], data["email"])
+    return suppliers[supplier_id]
+
+
+def product_from_dict(item: dict[str, Any], suppliers: dict[str, Supplier]) -> Product:
     """Use the "type" identifier to create the correct Product subclass."""
-    product_type = item["type"]
+    supplier: Supplier = supplier_from_dict(item["supplier"], suppliers)
+    product_type: str = item["type"]
 
     if product_type == "physical":
         return PhysicalProduct(
@@ -23,6 +36,7 @@ def product_from_dict(item):
             item["name"],
             float(item["price"]),
             int(item["stock"]),
+            supplier,
             float(item["weight"])
         )
     elif product_type == "digital":
@@ -31,19 +45,26 @@ def product_from_dict(item):
             item["name"],
             float(item["price"]),
             int(item["stock"]),
+            supplier,
             float(item["download_size"])
         )
     else:
         raise ValueError(f"Unknown product type: {product_type}")
 
 
-def product_to_dict(product):
+def product_to_dict(product: Product) -> dict[str, Any]:
     """Turn a Product object into a dictionary that can be saved as JSON."""
-    item = {
+    supplier: Supplier = product.get_supplier()
+    item: dict[str, Any] = {
         "id": product.get_product_id(),
         "name": product.get_name(),
         "price": product.get_price(),
-        "stock": product.get_stock()
+        "stock": product.get_stock(),
+        "supplier": {
+            "id": supplier.get_supplier_id(),
+            "name": supplier.get_name(),
+            "email": supplier.get_contact_email()
+        }
     }
 
     if isinstance(product, PhysicalProduct):
@@ -58,19 +79,20 @@ def product_to_dict(product):
     return item
 
 
-def load_inventory(filename=INVENTORY_FILE):
-    products = []
-    status = "not_found"
+def load_inventory(filename: str = INVENTORY_FILE) -> tuple[list[Product], str]:
+    products: list[Product] = []
+    suppliers: dict[str, Supplier] = {}
+    status: str = "not_found"
 
     try:
         with open(filename, "r") as file:
-            data = json.load(file)
+            data: Any = json.load(file)
 
         if not isinstance(data, list):
             return [], "error"
 
         for item in data:
-            products.append(product_from_dict(item))
+            products.append(product_from_dict(item, suppliers))
         status = "loaded"
 
     except FileNotFoundError:
@@ -83,8 +105,8 @@ def load_inventory(filename=INVENTORY_FILE):
     return products, status
 
 
-def save_inventory(products, filename=INVENTORY_FILE):
-    data = []
+def save_inventory(products: Sequence[Product], filename: str = INVENTORY_FILE) -> None:
+    data: list[dict[str, Any]] = []
     for product in products:
         data.append(product_to_dict(product))
 

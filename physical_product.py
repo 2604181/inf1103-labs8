@@ -1,27 +1,28 @@
 """
-INF1103 Week 9 - PhysicalProduct
+INF1103 Week 10 - PhysicalProduct
 A PhysicalProduct IS-A Product, and it CAN be shipped (CanBeShipped).
 """
-
-from can_be_shipped import CanBeShipped
 from product import Product
+from can_be_shipped import CanBeShipped
+from supplier import Supplier
 
 # Simple shipping rule: flat fee + a charge per kilogram
-SHIPPING_BASE_COST = 5.00
-SHIPPING_COST_PER_KG = 2.00
+SHIPPING_BASE_COST: float = 5.00
+SHIPPING_COST_PER_KG: float = 2.00
 
 
 class PhysicalProduct(Product, CanBeShipped):
-    def __init__(self, product_id, name, price, stock, weight):
-        super().__init__(product_id, name, price, stock)
+    def __init__(self, product_id: str, name: str, price: float, stock: int,
+                 supplier: Supplier, weight: float) -> None:
+        super().__init__(product_id, name, price, stock, supplier)
         if weight < 0:
             raise ValueError("Weight cannot be negative.")
-        self.__weight = weight
+        self.__weight: float = weight
 
-    def get_weight(self):
+    def get_weight(self) -> float:
         return self.__weight
 
-    def display_information(self):
+    def display_information(self) -> None:
         super().display_information()
         print(f"    Type: Physical | Weight: {self.__weight:.2f} kg")
 

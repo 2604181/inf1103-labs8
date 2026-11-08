@@ -4,6 +4,11 @@
         "name": "Laptop",
         "price": 1200.0,
         "stock": 15,
+        "supplier": {
+            "id": "S001",
+            "name": "TechSource Pte Ltd",
+            "email": "sales@techsource.sg"
+        },
         "type": "physical",
         "weight": 2.5
     },
@@ -11,7 +16,12 @@
         "id": "P002",
         "name": "Mouse",
         "price": 25.5,
-        "stock": 55,
+        "stock": 40,
+        "supplier": {
+            "id": "S001",
+            "name": "TechSource Pte Ltd",
+            "email": "sales@techsource.sg"
+        },
         "type": "physical",
         "weight": 0.1
     },
@@ -20,6 +30,11 @@
         "name": "Antivirus Software",
         "price": 29.99,
         "stock": 100,
+        "supplier": {
+            "id": "S001",
+            "name": "TechSource Pte Ltd",
+            "email": "sales@techsource.sg"
+        },
         "type": "digital",
         "download_size": 350.0
     },
@@ -28,31 +43,12 @@
         "name": "E-Book",
         "price": 9.99,
         "stock": 500,
+        "supplier": {
+            "id": "S002",
+            "name": "BookWorks LLP",
+            "email": "hello@bookworks.sg"
+        },
         "type": "digital",
         "download_size": 12.5
-    },
-    {
-        "id": "P01",
-        "name": "Fan",
-        "price": 200.0,
-        "stock": 3,
-        "type": "physical",
-        "weight": 15.0
-    },
-    {
-        "id": "P005",
-        "name": "Guitar",
-        "price": 350.0,
-        "stock": 4,
-        "type": "physical",
-        "weight": 3.2
-    },
-    {
-        "id": "D005",
-        "name": "Photo Editor",
-        "price": 59.9,
-        "stock": 80,
-        "type": "digital",
-        "download_size": 210.0
     }
 ]
